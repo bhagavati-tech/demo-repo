@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Assign Open Label
-        uses: actions/labeler@v1
+        uses: actions/labeler
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           labels: open
