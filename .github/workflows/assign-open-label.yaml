@@ -1,16 +1,21 @@
+name: Auto Assign Label
+
 on:
   issues:
     types: [opened]
 
 jobs:
-  label:
+  auto-assign-label:
     runs-on: ubuntu-latest
-    name: Label issue
     steps:
-      - uses: actions/checkout@v2
-      - name: Label issue
-        uses: octokit/request-action@v2
+      - name: Add Open Label
+        uses: actions/github-script@v4
         with:
-          route: POST /repos/:owner/:repo/issues/:issue_number/labels
-          parameters:
-            labels: Open
+          script: |
+            github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['open']
+            })
+          github-token: ${{ secrets.GITHUB_TOKEN }}
