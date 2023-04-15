@@ -12,4 +12,4 @@ jobs:
         uses: octokit/request-action@v2
         with:
           route: POST /repos/:owner/:repo/issues/:issue_number/labels
-          parameters: { labels: 'open' }
+          parameters: { labels: 'Open' }
