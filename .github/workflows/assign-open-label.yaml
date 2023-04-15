@@ -13,4 +13,4 @@ jobs:
         with:
           route: POST /repos/:owner/:repo/issues/:issue_number/labels
           parameters:
-           labels: 'Open'
+            labels: Open
