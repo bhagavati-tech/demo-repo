@@ -1,0 +1,15 @@
+on:
+  issues:
+    types: [opened]
+
+name: Issue Open Label
+
+jobs:
+  assign-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Open Label
+        uses: actions/labeler@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: open
