@@ -24,7 +24,7 @@ jobs:
       - name: Add Open Label and Assign to Next Team Member
         uses: actions/github-script@v4
         with:
-          script: >
+          script: |
             github.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
