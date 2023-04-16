@@ -13,7 +13,7 @@ jobs:
         run: echo "::set-output name=members::AlanRoth,felixif,shub8968,shub8881,Elifzeynepedman"
       - name: Get Next Team Member
         id: next-member
-        run: >
+        run: |
           members=($(echo "${{ steps.team-members.outputs.members }}" | tr ',' '\n'))
 
           index=$(( (${GITHUB_RUN_NUMBER}-1) % ${#members[@]} ))
@@ -30,11 +30,5 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               labels: ['Open']
-            })
-            github.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              assignees: [`${{ steps.next-member.outputs.next_member }}`]
             })
             github-token: ${{ secrets.GITHUB_TOKEN }}             
