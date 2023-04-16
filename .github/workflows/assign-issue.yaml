@@ -31,10 +31,10 @@ jobs:
               issue_number: context.issue.number,
                            labels: ['Open']
                          })
-                         github.issues.addAssignees({
-                           owner: context.repo.owner,
-                           repo: context.repo.repo,
-                           issue_number: context.issue.number,
-                           assignees: [`${{ steps.next-member.outputs.next_member }}`]
-                         })
-                       github-token: ${{ secrets.GITHUB_TOKEN }}
+            github.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: [`${{ steps.next-member.outputs.next_member }}`]
+                        })
+            github-token: ${{ secrets.GITHUB_TOKEN }}             
