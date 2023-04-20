@@ -1,7 +1,8 @@
 name:   Abandoned Issue Reminder
 on:
   issues:
-    types: [ Open, edited ]
+    types:
+      - Pending
 
 jobs:
   check_issue_activity:
