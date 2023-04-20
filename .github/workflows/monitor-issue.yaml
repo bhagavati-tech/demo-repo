@@ -2,7 +2,7 @@ name: Pending Issue
 
 on:
   issues:
-    types: [opened, edited]
+    types: [Open]
 
 jobs:
   check-pending:
