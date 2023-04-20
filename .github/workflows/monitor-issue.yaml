@@ -1,0 +1,60 @@
+on:
+  schedule:
+    - cron: '0 0 */5 * *'
+
+jobs:
+  check_issue_activity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for abandoned issues
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const daysSinceUpdate = 1;
+            const pendingLabel = 'Status: Pending';
+            const abandonedLabel = 'Status: Abandoned';
+            const query = `
+              query($owner: String!, $repo: String!, $label: String!, $daysSinceUpdate: DateTime!) {
+                repository(owner: $owner, name: $repo) {
+                  issues(labels: [$label], states: OPEN) {
+                    nodes {
+                      number
+                      updatedAt
+                      author {
+                        login
+                      }
+                      labels(first: 10) {
+                        nodes {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const variables = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              label: pendingLabel,
+              daysSinceUpdate: new Date(Date.now() - daysSinceUpdate  * 60 * 1000)
+            };
+            const { repository } = await github.graphql(query, variables);
+            const issues = repository.issues.nodes;
+            for (const issue of issues) {
+              const lastUpdated = new Date(issue.updatedAt);
+              const daysSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / (60 * 1000));
+              if (daysSinceLastUpdate >= daysSinceUpdate && issue.labels.nodes.some(label => label.name === pendingLabel)) {
+                await github.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [abandonedLabel]
+                });
+                await github.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `This issue has been marked as abandoned because there have been no updates in the past ${daysSinceUpdate} days. Please provide an update or this issue will be closed in the near future.`
+                });
