@@ -1,7 +1,7 @@
 name:   Abandoned Issue Reminder
 on:
-  schedule:
-    - cron: '2 * * * *'
+  issues:
+    types: [ Open, edited ]
 
 jobs:
   check_issue_activity:
