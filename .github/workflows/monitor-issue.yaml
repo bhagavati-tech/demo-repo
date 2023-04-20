@@ -1,43 +1,43 @@
-name: Pending Label
-on:
-  issues:
-    types:
-      - opened
-jobs:
-  check-pending:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if issue is pending
-        id: check_pending
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const issue = context.payload.issue;
-            const labelNames = issue.labels.map(label => label.name);
-            const isPending = labelNames.includes('Status: Pending');
-            const lastUpdated = new Date(issue.updated_at);
-            const timeDiff = Math.abs(Date.now() - lastUpdated.getTime());
-            const minutesDiff = Math.floor(timeDiff / (1000 * 60));
-            return {isPending, minutesDiff};
-
-      - name: Label issue as abandoned and request update
-        if: ${{ steps.check_pending.outputs.isPending && steps.check_pending.outputs.minutesDiff >= 2 }}
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const issue = context.payload.issue;
-            const issueNumber = issue.number;
-            const repo = context.repo.repo;
-            const owner = context.repo.owner;
-            await github.issues.addLabels({
-              owner,
-              repo,
-              issue_number:issueNumber,
-              labels: ['Status: Abandoned']
-            });
-            await github.issues.createComment({
-              owner,
-              repo,
-              issue_number: issueNumber,
-              body: 'This issue has been marked as abandoned due to inactivity. Please provide an update if you still require assistance.'
-            });
+#name: Pending Label
+#on:
+#  issues:
+#    types:
+#      - opened
+#jobs:
+#  check-pending:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check if issue is pending
+#        id: check_pending
+#        uses: actions/github-script@v4
+#        with:
+#          script: |
+#            const issue = context.payload.issue;
+#            const labelNames = issue.labels.map(label => label.name);
+#            const isPending = labelNames.includes('Status: Pending');
+#            const lastUpdated = new Date(issue.updated_at);
+#            const timeDiff = Math.abs(Date.now() - lastUpdated.getTime());
+#            const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+#            return {isPending, minutesDiff};
+#
+#      - name: Label issue as abandoned and request update
+#        if: ${{ steps.check_pending.outputs.isPending && steps.check_pending.outputs.minutesDiff >= 2 }}
+#        uses: actions/github-script@v4
+#        with:
+#          script: |
+#            const issue = context.payload.issue;
+#            const issueNumber = issue.number;
+#            const repo = context.repo.repo;
+#            const owner = context.repo.owner;
+#            await github.issues.addLabels({
+#              owner,
+#              repo,
+#              issue_number:issueNumber,
+#              labels: ['Status: Abandoned']
+#            });
+#            await github.issues.createComment({
+#              owner,
+#              repo,
+#              issue_number: issueNumber,
+#              body: 'This issue has been marked as abandoned due to inactivity. Please provide an update if you still require assistance.'
+#            });

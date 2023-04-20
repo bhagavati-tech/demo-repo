@@ -1,8 +1,7 @@
 name: Pending Label
 on:
   issues:
-    types:
-      - opened
+    types: [opened]
 jobs:
   check-pending:
     runs-on: ubuntu-latest
@@ -33,11 +32,9 @@ jobs:
               owner,
               repo,
               issue_number:issueNumber,
-              labels: ['Status: Abandoned']
-            });
+              labels: ['Status: Abandoned']});
             await github.issues.createComment({
               owner,
               repo,
               issue_number: issueNumber,
-              body: 'This issue has been marked as abandoned due to inactivity. Please provide an update if you still require assistance.'
-            });
+              body: 'This issue has been marked as abandoned due to inactivity. Please provide an update if you still require assistance.'});
