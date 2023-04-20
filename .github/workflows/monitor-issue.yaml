@@ -1,62 +1,44 @@
-name: Abandoned Issue Reminder
+name: Pending Issue
+
 on:
-  schedule:
-    - cron: '2 * * * *' # Runs every 5 days
   issues:
-    types: [Open]
+    types: [opened, edited]
+
 jobs:
-  check_issue_activity:
+  check-pending:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for abandoned issues
-        uses: actions/github-script@v3
+      - name: Check if issue is pending
+        id: check_pending
+        uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const daysSinceUpdate = 1;
-            const pendingLabel = 'Status: Pending';
-            const abandonedLabel = 'Status: Abandoned';
-            const query = `
-              query($owner: String!, $repo: String!, $label: String!, $daysSinceUpdate: DateTime!) {
-                repository(owner: $owner, name: $repo) {
-                  issues(labels: [$label], states: OPEN) {
-                    nodes {
-                      number
-                      updatedAt
-                      author {
-                        login
-                      }
-                      labels(first: 10) {
-                        nodes {
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            `;
-            const variables = {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              label: pendingLabel,
-              daysSinceUpdate: new Date(Date.now() - daysSinceUpdate  * 60 * 1000)
-            };
-            const { repository } = await github.graphql(query, variables);
-            const issues = repository.issues.nodes;
-            for (const issue of issues) {
-              const lastUpdated = new Date(issue.updatedAt);
-              const daysSinceLastUpdate = Math.floor((Date.now() - lastUpdated) / (60 * 1000));
-              if (daysSinceLastUpdate >= daysSinceUpdate && issue.labels.nodes.some(label => label.name === pendingLabel)) {
-                await github.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  labels: [abandonedLabel]
-                });
-                await github.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issue.number,
-                  body: `This issue has been marked as abandoned because there have been no updates in the past ${daysSinceUpdate} days. Please provide an update or this issue will be closed in the near future.`
-                });
+            const issue = context.payload.issue;
+            const labelNames = issue.labels.map(label => label.name);
+            const isPending = labelNames.includes('Status: Pending');
+            const lastUpdated = new Date(issue.updated_at);
+            const timeDiff = Math.abs(Date.now() - lastUpdated.getTime());
+            const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+            return {isPending, minutesDiff};
+
+      - name: Label issue as abandoned and request update
+        if: ${{ steps.check_pending.outputs.isPending && steps.check_pending.outputs.minutesDiff >= 2 }}
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueNumber = issue.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            await github.issues.addLabels({
+              owner,
+              repo,
+              issue_number:issueNumber,
+              labels: ['Status: Abandoned']
+            });
+            await github.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: 'This issue has been marked as abandoned due to inactivity. Please provide an update if you still require assistance.'
+            });
