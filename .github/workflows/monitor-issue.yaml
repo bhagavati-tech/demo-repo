@@ -1,11 +1,9 @@
 name: Abandoned Issue Reminder
-
 on:
   schedule:
     - cron: '2 * * * *' # Runs every 5 days
   issues:
-    types: [opened, edited]
-
+    types: [Open]
 jobs:
   check_issue_activity:
     runs-on: ubuntu-latest
