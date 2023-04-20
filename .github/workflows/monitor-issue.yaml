@@ -1,8 +1,10 @@
-name:   Abandoned Issue Reminder
+name: Abandoned Issue Reminder
+
 on:
+  schedule:
+    - cron: '2 * * * *' # Runs every 5 days
   issues:
-    types:
-      - Pending
+    types: [opened, edited]
 
 jobs:
   check_issue_activity:
