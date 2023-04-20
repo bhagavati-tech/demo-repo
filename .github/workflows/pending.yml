@@ -1,7 +1,7 @@
 name: Pending Label
 on:
   issues:
-    types: [opened]
+    types: [Pending]
 jobs:
   check-pending:
     runs-on: ubuntu-latest
