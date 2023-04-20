@@ -1,9 +1,9 @@
-name: Pending Issue
-
+---
+name: Pending Label
 on:
   issues:
-    types: [Open]
-
+    types:
+      - opened
 jobs:
   check-pending:
     runs-on: ubuntu-latest
