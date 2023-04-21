@@ -12,7 +12,7 @@ jobs:
         id: abandoned-issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DAYS_SINCE_UPDATED_LIMIT: # change this as per your requirement
+          DAYS_SINCE_UPDATED_LIMIT: 0.0013888889
         run: |
           # Get the list of issues
           ISSUES=$(curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
