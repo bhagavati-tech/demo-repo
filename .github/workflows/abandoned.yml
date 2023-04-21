@@ -17,10 +17,10 @@ jobs:
             const abandonedLabel = "Abandoned";
             const timeThreshold = 2 * 60 * 1000; // 2 minutes in milliseconds
 
-            const issuesResponse = await github.issues.listForRepo({
+            const issuesResponse = await github.rest.issues.listForRepo({
               owner,
               repo,
-              labels: Pending,
+              labels: pendingLabel,
               state: "open",
             });
 
@@ -29,21 +29,21 @@ jobs:
               const currentTime = new Date().getTime();
 
               if (currentTime - updatedAt > timeThreshold) {
-                await github.issues.addLabels({
+                await github.rest.issues.addLabels({
                   owner,
                   repo,
                   issue_number: issue.number,
-                  labels: [Abandoned],
+                  labels: [abandonedLabel],
                 });
 
                 await github.issues.removeLabel({
                   owner,
                   repo,
                   issue_number: issue.number,
-                  name: Pending,
+                  name: pendingLabel,
                 });
 
-                await github.issues.createComment({
+                await github.rest.issues.createComment({
                   owner,
                   repo,
                   issue_number: issue.number,
