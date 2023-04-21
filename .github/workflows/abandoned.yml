@@ -36,7 +36,7 @@ jobs:
                   labels: [abandonedLabel],
                 });
 
-                await github.issues.removeLabel({
+                await github.rest.issues.removeLabel({
                   owner,
                   repo,
                   issue_number: issue.number,
