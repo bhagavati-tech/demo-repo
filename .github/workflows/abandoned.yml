@@ -2,7 +2,7 @@ name: Abandoned Issue
 
 on:
   schedule:
-    - cron: '1 * * * *'
+    - cron: '/1 * * * *'
 
 jobs:
   check-issue:
