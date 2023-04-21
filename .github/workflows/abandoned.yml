@@ -20,7 +20,7 @@ jobs:
             const issuesResponse = await github.issues.listForRepo({
               owner,
               repo,
-              labels: pendingLabel,
+              labels: Pending,
               state: "open",
             });
 
@@ -33,14 +33,14 @@ jobs:
                   owner,
                   repo,
                   issue_number: issue.number,
-                  labels: [abandonedLabel],
+                  labels: [Abandoned],
                 });
 
                 await github.issues.removeLabel({
                   owner,
                   repo,
                   issue_number: issue.number,
-                  name: pendingLabel,
+                  name: Pending,
                 });
 
                 await github.issues.createComment({
