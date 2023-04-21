@@ -1,7 +1,9 @@
 name: Abandoned Issue Labeling
+
 on:
   schedule:
     - cron: '*/1 * * * *' # daily at midnight UTC
+
 jobs:
   abandoned-issues:
     runs-on: ubuntu-latest
@@ -12,14 +14,13 @@ jobs:
         id: abandoned-issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DAYS_SINCE_UPDATED_LIMIT: 0.0013888889
         run: |
           # Get the list of issues
           ISSUES=$(curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
-          "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues?labels=Pending" | jq ".[] | {updated_at: .updated_at, number: .number}" )
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues?labels=pending" | jq ".[] | {updated_at: .updated_at, number: .number}" )
           
           # Filter out abandoned issues
-          echo $ISSUES | jq -c 'select(((.updated_at | fromdateiso8601) | now - (.updated_at | fromdateiso8601)) > (env.DAYS_SINCE_UPDATED_LIMIT|tonumber) * 86400)' | while read line; do
+          echo $ISSUES | jq -c --arg days_since_updated "$DAYS_SINCE_UPDATED_LIMIT" 'select(((.updated_at | fromdateiso8601) | now - (.updated_at | fromdateiso8601)) > ($days_since_updated|tonumber) * 86400)' | while read line; do
             ISSUE_NUMBER=$(echo "$line" | jq -r '.number')
           
             # Add label
