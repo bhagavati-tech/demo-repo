@@ -1,18 +1,36 @@
-name: Abandoned Issue
-
+name: Abandoned Issue Labeling
 on:
   schedule:
-    - cron: '0 0 * * *'
-
+    - cron: '*/1 * * * *' # daily at midnight UTC
 jobs:
-  check-issue:
+  abandoned-issues:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: Install dependencies
-        run: npm install
-      - name: Check Abandoned Issues
+      - name: Find abandoned issues
+        id: abandoned-issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run check
+          DAYS_SINCE_UPDATED_LIMIT: # change this as per your requirement
+        run: |
+          # Get the list of issues
+          ISSUES=$(curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues?labels=Pending" | jq ".[] | {updated_at: .updated_at, number: .number}" )
+          
+          # Filter out abandoned issues
+          echo $ISSUES | jq -c 'select(((.updated_at | fromdateiso8601) | now - (.updated_at | fromdateiso8601)) > (env.DAYS_SINCE_UPDATED_LIMIT|tonumber) * 86400)' | while read line; do
+            ISSUE_NUMBER=$(echo "$line" | jq -r '.number')
+          
+            # Add label
+            curl -sSL -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/labels" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '[ "abandoned" ]'
+          
+            # Add comment (optional)
+            curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '{"body": "@<username>, It has been a while since this issue was updated. Could you please provide an update if possible?"}' # replace <username> with the username of the user to whom you want to address the comment
+          done
