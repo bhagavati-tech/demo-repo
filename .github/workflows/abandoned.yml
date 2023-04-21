@@ -1,0 +1,18 @@
+name: Abandoned Issue
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  check-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Check Abandoned Issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run check
