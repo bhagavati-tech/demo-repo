@@ -1,38 +1,53 @@
-name: Abandoned Issue Labeling
+name: Abandoned Labeler
 
 on:
   schedule:
-    - cron: '*/1 * * * *' # daily at midnight UTC
+    - cron: "*/2 * * * *"
 
 jobs:
-  abandoned-issues:
+  abandoned-labeler:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Find abandoned issues
-        id: abandoned-issues
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DAYS_SINCE_UPDATED_LIMIT: 0.00138889
-        run: |
-          # Get the list of issues
-          ISSUES=$(curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
-          "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues?labels=pending" | jq ".[] | {updated_at: .updated_at, number: .number}" )
-          
-          # Filter out abandoned issues
-          echo $ISSUES | jq -c --arg days_since_updated "$DAYS_SINCE_UPDATED_LIMIT" 'select(((.updated_at | fromdateiso8601) | now - (.updated_at | fromdateiso8601)) > ($days_since_updated|tonumber) * 86400)' | while read line; do
-            ISSUE_NUMBER=$(echo "$line" | jq -r '.number')'
-          
-            # Add label
-            curl -sSL -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/labels" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -d '[ "abandoned" ]'
-          
-            # Add comment (optional)
-            curl -sSL -H "Authorization: token ${GITHUB_TOKEN}" \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -d '{"body": "@<username>, It has been a while since this issue was updated. Could you please provide an update if possible?"}'
-          done
+      - name: Check for abandoned issues
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pendingLabel = "Pending";
+            const abandonedLabel = "Abandoned";
+            const timeThreshold = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+            const issuesResponse = await github.issues.listForRepo({
+              owner,
+              repo,
+              labels: pendingLabel,
+              state: "open",
+            });
+
+            for (const issue of issuesResponse.data) {
+              const updatedAt = new Date(issue.updated_at).getTime();
+              const currentTime = new Date().getTime();
+
+              if (currentTime - updatedAt > timeThreshold) {
+                await github.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  labels: [abandonedLabel],
+                });
+
+                await github.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  name: pendingLabel,
+                });
+
+                await github.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: "It's been more than 2 minutes since your last update. Could you provide an update?",
+                });
+              }
+            }
