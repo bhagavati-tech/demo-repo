@@ -2,7 +2,7 @@ name: Abandoned Labeler
 
 on:
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: "0 0 * * *"
 
 jobs:
   abandoned-labeler:
