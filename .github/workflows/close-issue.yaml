@@ -1,53 +1,52 @@
-name: Abandoned Labeler
-
+name: Close abandoned issues
 on:
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
   abandoned-labeler:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for abandoned issues
+      - name: Close the abandoned issue
         uses: actions/github-script@v6
         with:
           script: |
             const { owner, repo } = context.repo;
-            const pendingLabel = "Pending";
             const abandonedLabel = "Abandoned";
-            const timeThreshold = 2 * 60 * 1000; // 2 minutes in milliseconds
-
+            const timeThreshold = 5 * 60 * 1000 //5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+           
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
               repo,
-              labels: pendingLabel,
+              labels: abandonedLabel,
               state: "open",
             });
-
+            
             for (const issue of issuesResponse.data) {
               const updatedAt = new Date(issue.updated_at).getTime();
               const currentTime = new Date().getTime();
 
               if (currentTime - updatedAt > timeThreshold) {
-                await github.rest.issues.addLabels({
-                  owner,
-                  repo,
-                  issue_number: issue.number,
-                  labels: [abandonedLabel],
-                });
-
+            
                 await github.rest.issues.removeLabel({
                   owner,
                   repo,
                   issue_number: issue.number,
-                  name: pendingLabel,
+                  name: abandonedLabel,
                 });
 
                 await github.rest.issues.createComment({
                   owner,
                   repo,
                   issue_number: issue.number,
-                  body: "It's been more than 2 minutes since your last update. Could you provide an update?",
+                  body: "Closing the Abandoned issue that has not been updated",
+                });
+                
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  state: "closed",
                 });
               }
             }
