@@ -1,7 +1,7 @@
-name: Close abandoned issues
+name: Close Abandoned Issues
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 */3 * * *"
 
 jobs:
   abandoned-labeler:
@@ -13,7 +13,9 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const abandonedLabel = "Abandoned";
-            const timeThreshold = 5 * 60 * 1000 //5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+            const timeThreshold = 5 * 60 * 60 * 1000 // 5 Hrs
+            //5 * 60 * 1000 // 5 Minute
+            // 5 * 24 * 60 * 60 * 1000; // 5 days
            
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
@@ -39,7 +41,7 @@ jobs:
                   owner,
                   repo,
                   issue_number: issue.number,
-                  body: "Closing the Abandoned issue that has not been updated",
+                  body: "It's been more than 5 Hours since we have requested for the update on the state of the issue. As we have not received one thus we are closing the issue due to inactivity",
                 });
                 
                 await github.rest.issues.update({

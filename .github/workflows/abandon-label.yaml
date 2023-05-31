@@ -2,7 +2,7 @@ name: Abandoned Labeler
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 */3 * * *"
 
 jobs:
   abandoned-labeler:
@@ -15,7 +15,9 @@ jobs:
             const { owner, repo } = context.repo;
             const pendingLabel = "Pending";
             const abandonedLabel = "Abandoned";
-            const timeThreshold = 5 * 60 * 1000; // 5 minutes in milliseconds //5 * 24 * 60 * 60 * 1000; 5 Days
+            const timeThreshold = 5 * 60 * 60 * 1000 // 5 Hrs
+            //5 * 60 * 1000 // 5 Minute
+            // 5 * 24 * 60 * 60 * 1000; // 5 days
 
             const issuesResponse = await github.rest.issues.listForRepo({
               owner,
@@ -47,7 +49,7 @@ jobs:
                   owner,
                   repo,
                   issue_number: issue.number,
-                  body: "It's been more than 2 minutes since your last update. Could you provide an update?",
+                  body: "It's been more than 5 Hours since your last update. Could you please provide an update?",
                 });
               }
             }
