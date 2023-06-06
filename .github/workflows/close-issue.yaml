@@ -4,7 +4,7 @@ on:
     - cron: "0 */3 * * *"
 
 jobs:
-  abandoned-labeler:
+  close-labeler:
     runs-on: ubuntu-latest
     steps:
       - name: Close the abandoned issue
