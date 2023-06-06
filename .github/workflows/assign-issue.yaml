@@ -9,40 +9,31 @@ jobs:
     steps:
       - name: Get Team Members
         id: team-members
-        run: echo "members=AlanRoth,felixif,shub8968,shub8881,Elifzeynepedman,deetewari,RamyaBill,fturizo" >> $GITHUB_ENV
+        run: echo "::set-output name=members::AlanRoth,felixif,shub8968,shub8881,Elifzeynepedman,deetewari,RamyaBill,fturizo"
       - name: Get Next Team Member
         id: next-member
         run: |
-          members=($(echo "${{ env.members }}" | tr ',' '\n'))
+          members=($(echo "${{ steps.team-members.outputs.members }}" | tr ',' '\n'))
 
           index=$(( (${GITHUB_RUN_NUMBER}-1) % ${#members[@]} ))
 
           next_member=${members[$index]}
 
-          echo "next_member=$next_member" >> $GITHUB_ENV
-      - name: Install @octokit/auth-token and @octokit/rest
-        run: npm install @octokit/auth-token @octokit/rest
+          echo "::set-output name=next_member::$next_member"
       - name: Add Open Label and Assign to Next Team Member
-        uses: actions/github-script@v6
+        uses: actions/github-script@v4
         with:
           script: |
-            const { Octokit } = require("@octokit/rest");
-            const { createTokenAuth } = require("@octokit/auth-token");
-            
-            const auth = createTokenAuth(process.env.GITHUB_TOKEN);
-
-            const octokit = new Octokit({ authStrategy: auth });
-
-            octokit.issues.addLabels({
+            github.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               labels: ['Open']
-            });
-            octokit.issues.addAssignees({
+            })
+            github.issues.addAssignees({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              assignees: [`${{ env.next_member }}`]
-            });
+              assignees: [`${{ steps.next-member.outputs.next_member}}`]
+            })
           github-token: ${{ secrets.GITHUB_TOKEN }}
