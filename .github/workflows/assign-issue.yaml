@@ -20,8 +20,8 @@ jobs:
           next_member=${members[$index]}
 
           echo "next_member=$next_member" >> $GITHUB_ENV
-      - name: Install @octokit/auth-token
-        run: npm install @octokit/auth-token
+      - name: Install @octokit/auth-token and @octokit/rest
+        run: npm install @octokit/auth-token @octokit/rest
       - name: Add Open Label and Assign to Next Team Member
         uses: actions/github-script@v6
         with:
