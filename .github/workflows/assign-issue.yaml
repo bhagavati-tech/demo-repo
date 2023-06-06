@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Get Team Members
         id: team-members
-        run: echo "::set-output name=members::AlanRoth,felixif,shub8968,shub8881,Elifzeynepedman,deetewari,RamyaBill,fturizo"
+        run: echo "::set-output name=members::felixif,shub8968,shub8881,Elifzeynepedman,RamyaBill,fturizo"
       - name: Get Next Team Member
         id: next-member
         run: |
