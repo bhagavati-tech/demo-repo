@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Get Team Members
         id: team-members
-        run: echo "members=AlanRoth,felixif,shub8968,shub8881,Elifzeynepedman,deetewari,RamyaBill,fturizo" >> $GITHUB_ENV
+        run: echo "members=felixif,shub8968,shub8881,Elifzeynepedman,RamyaBill,fturizo" >> $GITHUB_ENV
       - name: Get Next Team Member
         id: next-member
         run: |
